@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script>
+window.onload = function () {
+
+var dps = []; // dataPoints
+var chart = new CanvasJS.Chart("chartContainer", {
+	title :{
+		text: "Car Counts"
+	},
+	axisX: {
+		title: "Elasped time (s)",
+	},
+	axisY: {
+		title: "Number of Cars",
+		includeZero: false
+	},
+	data: [{
+		type: "line",
+		dataPoints: dps
+	}]
+});
+
+var dataLength = 300; // number of dataPoints visible at any point
+
+
+var ws = new WebSocket("ws://127.0.0.1:5678/")
+var video_feed = document.getElementById("video_feed")
+ws.onmessage = function (event) {
+
+    var message = JSON.parse(event.data);
+    video_feed.setAttribute("src", "data: image/jpg;base64, " + message.img_b64)
+		dps.push({
+			x: message.timestamp,
+			y: message.boxnum
+		});
+		if (dps.length > dataLength) {
+			dps.shift();
+		}
+		chart.render();
+
+  }
+
+}
+</script>
+</head>
+<body>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<img id="video_feed" src="data:image/jpg;base64, ..." alt="foobar" />
+</body>
+</html>
